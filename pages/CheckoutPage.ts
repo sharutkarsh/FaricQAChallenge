@@ -24,7 +24,8 @@ export class CheckoutPage extends BasePage {
   readonly paymentInfoContinue    = this.page.locator("xpath=//*[@id='payment-info-buttons-container']//button[contains(text(),'Continue')]");
 
   // Step 6 — Confirm order
-  readonly confirmButton          = this.page.locator("xpath=//*[@id='confirm-order-buttons-container']//button[contains(text(),'Confirm')]");
+  readonly confirmButton              = this.page.locator("xpath=//*[@id='confirm-order-buttons-container']//button[contains(text(),'Confirm')]");
+  readonly confirmOrderButtonsContainer = this.page.locator("xpath=//*[@id='confirm-order-buttons-container']");
 
   // Thank-you page
   readonly thankYouTitle    = this.page.locator("xpath=//*[contains(@class,'title') and contains(.,'Your order has been successfully processed')]");
@@ -64,7 +65,9 @@ export class CheckoutPage extends BasePage {
     // Cloudflare's __cfRLUnblockHandlers guard suppresses the onclick handler on a normal
     // .click() — dispatch the event directly so PaymentInfo.save() fires regardless.
     await this.paymentInfoContinue.dispatchEvent('click');
-    await expect(this.confirmButton).toBeVisible({ timeout: 20000 });
+    // Wait for the confirm-order section to expand — the container transitions from
+    // display:none to visible via CSS after the AJAX response settles.
+    await this.confirmOrderButtonsContainer.waitFor({ state: 'visible', timeout: 20000 });
   }
 
   async confirmOrder() {

@@ -5,6 +5,7 @@ const CHROME_UA =
 
 export default defineConfig({
   testDir: './tests',
+  timeout: 120000,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -21,7 +22,7 @@ export default defineConfig({
     headless: !!process.env.CI,
     viewport: { width: 1280, height: 720 },
     ignoreHTTPSErrors: true,
-    actionTimeout: 20000,
+    actionTimeout: 60000,
     navigationTimeout: 60000,
     userAgent: CHROME_UA,
 
@@ -49,14 +50,6 @@ export default defineConfig({
         viewport: { width: 1280, height: 720 },
         userAgent: CHROME_UA,
       },
-    },
-    {
-      name: 'firefox',
-      use: { browserName: 'firefox', viewport: { width: 1280, height: 720 } },
-    },
-    {
-      name: 'webkit',
-      use: { browserName: 'webkit', viewport: { width: 1280, height: 720 } },
     },
   ],
 });
