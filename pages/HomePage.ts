@@ -12,13 +12,13 @@ export class HomePage extends BasePage {
   // ================= ACTIONS =================
 
   async searchProduct(term: string) {
-    const searchAPI = validateSearchAPI(this.page);
+    const searchResponsePromise = validateSearchAPI(this.page);
 
     await expect(this.searchInput).toBeVisible();
     await this.searchInput.fill(term);
     await this.searchButton.click();
 
-    await searchAPI;
+    await searchResponsePromise;
   }
 
   // ================= ASSERTIONS =================

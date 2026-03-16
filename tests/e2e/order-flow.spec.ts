@@ -43,7 +43,7 @@ test.describe('nopCommerce — Full Order Flow', () => {
 
     await test.step('5. Select a product and validate product details', async () => {
       await productPage.openFirstProduct();
-      await productPage.validateProductDetails();
+      await productPage.assertProductDetails();
     });
 
     await test.step('6. Add the product to the shopping cart', async () => {

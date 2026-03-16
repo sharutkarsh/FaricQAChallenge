@@ -40,9 +40,7 @@ Production-grade end-to-end automation framework for [demo.nopcommerce.com](http
 ├── utils/
 │   ├── networkHelper.ts     # API interception & validation helpers
 │   ├── randomData.ts        # Faker-based data generators
-│   ├── schemaValidator.ts   # AJV JSON schema validator
-│   ├── flakyDetector.ts     # Retry/flaky test logger
-│   └── waitHelpers.ts       # Network idle helper
+│   └── schemaValidator.ts   # AJV JSON schema validator
 ├── schemas/
 │   └── checkoutSchema.json  # JSON schema for checkout API response
 ├── .github/
@@ -121,19 +119,19 @@ export const testData = {
   baseUrl: 'https://demo.nopcommerce.com',
   user: {
     firstName: 'Test',
-    lastName: 'User',
-    password: 'Password123!',
+    lastName:  'User',
+    password:  process.env.TEST_PASSWORD ?? 'Password123!',
   },
   billing: {
-    country: 'United States',
-    state: 'New York',
-    city: 'New York',
-    address: '123 Main Street',
-    zip: '10001',
-    phone: '9999999999',
+    country: 'United States of America',
+    state:   'Alabama',
+    city:    'St. Lois',
+    address: 'Neshvaile Strret 5',
+    zip:     '32001',
+    phone:   '9999999999',
   },
   product: {
-    searchTerm: 'Laptop',
+    searchTerm: 'Asus Laptop',
   },
 };
 ```
@@ -164,11 +162,9 @@ Add the following secrets to your GitHub repository (`Settings → Secrets → A
 
 | Secret | Value |
 |---|---|
-| `MAIL_USERNAME` | Gmail address used to send reports |
-| `MAIL_PASSWORD` | Gmail App Password (not your account password) |
+| `MAIL_PASSWORD` | Resend API key (starts with `re_`) |
 | `MAIL_RECIPIENT` | Email address to receive reports |
-
-To generate a Gmail App Password: Google Account → Security → 2-Step Verification → App Passwords.
+| `TEST_PASSWORD` | nopCommerce test account password |
 
 ---
 

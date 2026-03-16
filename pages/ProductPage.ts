@@ -30,7 +30,7 @@ export class ProductPage extends BasePage {
 
   // ================= ASSERTIONS =================
 
-  async validateProductDetails() {
+  async assertProductDetails() {
     await expect(this.productName, 'Product title should be visible').toBeVisible();
     await expect(this.productPrice, 'Product price should be visible').toBeVisible();
     await expect(this.productDescription, 'Product description should be visible').toBeVisible();

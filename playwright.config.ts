@@ -47,8 +47,6 @@ export default defineConfig({
       name: 'chromium',
       use: {
         browserName: 'chromium',
-        viewport: { width: 1280, height: 720 },
-        userAgent: CHROME_UA,
       },
     },
   ],
