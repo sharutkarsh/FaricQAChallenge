@@ -11,12 +11,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
 
       - name: Install dependencies
@@ -37,7 +37,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload HTML report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         if: always()
         with:
           name: playwright-report
@@ -45,7 +45,7 @@ jobs:
           retention-days: 14
 
       - name: Upload test results (JUnit XML + traces)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         if: always()
         with:
           name: test-results
@@ -71,7 +71,7 @@ jobs:
 
       - name: Send test report email
         if: always()
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.resend.com
           server_port: 465
@@ -100,10 +100,6 @@ jobs:
             Artifacts & Logs
             ----------------
             HTML Report  : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
-            Screenshots  : Download the "test-results" artifact — screenshots are under
-                           test-results/<test-name>/test-failed-1.png
-            Traces       : Download the "test-results" artifact — open .zip files in
-                           https://trace.playwright.dev for step-by-step replay
             Artifacts are retained for 14 days.
 
       - name: Fail job if tests failed
