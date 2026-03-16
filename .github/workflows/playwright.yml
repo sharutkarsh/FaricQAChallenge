@@ -30,8 +30,6 @@ jobs:
 
       - name: Run Playwright tests
         id: run_tests
-        # xvfb-run gives Chromium a real display — avoids headless bot fingerprint
-        # CI="" keeps headless:false in playwright.config.ts
         run: xvfb-run --auto-servernum -- npx playwright test --project=chromium
         env:
           CI: ""
@@ -57,10 +55,19 @@ jobs:
       - name: Parse test results
         if: always()
         id: parse_results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: test-results/results.xml
-          publish_results: false
+        run: |
+          XML=test-results/results.xml
+          if [ -f "$XML" ]; then
+            get() { grep -oP "$1=\"\K[0-9]+" "$XML" | head -1; }
+            TOTAL=$(get tests); FAILED=$(get failures); ERRORS=$(get errors); SKIPPED=$(get skipped)
+            PASSED=$(( TOTAL - FAILED - ERRORS - SKIPPED ))
+          else
+            TOTAL=0; PASSED=0; FAILED=0; SKIPPED=0
+          fi
+          echo "total=$TOTAL"   >> $GITHUB_OUTPUT
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
 
       - name: Send test report email
         if: always()
