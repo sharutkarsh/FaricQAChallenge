@@ -1,0 +1,139 @@
+name: Playwright Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Install Xvfb for headed Chromium
+        run: sudo apt-get install -y xvfb
+
+      - name: Run Playwright tests
+        id: run_tests
+        # xvfb-run gives Chromium a real display — avoids headless bot fingerprint
+        # CI="" keeps headless:false in playwright.config.ts
+        run: xvfb-run --auto-servernum -- npx playwright test --project=chromium
+        env:
+          CI: ""
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+        continue-on-error: true
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test results (JUnit XML + traces)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 14
+
+      - name: Parse test results for email summary
+        if: always()
+        id: parse_results
+        run: |
+          if [ -f test-results/results.xml ]; then
+            TESTS=$(grep -oP 'tests="\K[0-9]+' test-results/results.xml | head -1 || echo 0)
+            FAILURES=$(grep -oP 'failures="\K[0-9]+' test-results/results.xml | head -1 || echo 0)
+            ERRORS=$(grep -oP 'errors="\K[0-9]+' test-results/results.xml | head -1 || echo 0)
+            SKIPPED=$(grep -oP 'skipped="\K[0-9]+' test-results/results.xml | head -1 || echo 0)
+            PASSED=$((TESTS - FAILURES - ERRORS - SKIPPED))
+            # Flaky = test cases that have >1 attempt recorded (retried but eventually passed)
+            FLAKY=$(grep -c 'retries=' test-results/results.xml 2>/dev/null || echo 0)
+            # Collect names of failed test cases for the email
+            FAILED_NAMES=$(grep -oP '(?<=name=")[^"]+(?="[^>]*<failure)' test-results/results.xml \
+              | head -10 | sed 's/^/  - /' | tr '\n' '|' || echo '')
+            echo "total=$TESTS"        >> $GITHUB_OUTPUT
+            echo "passed=$PASSED"      >> $GITHUB_OUTPUT
+            echo "failed=$FAILURES"    >> $GITHUB_OUTPUT
+            echo "errors=$ERRORS"      >> $GITHUB_OUTPUT
+            echo "skipped=$SKIPPED"    >> $GITHUB_OUTPUT
+            echo "flaky=$FLAKY"        >> $GITHUB_OUTPUT
+            echo "failed_names=$FAILED_NAMES" >> $GITHUB_OUTPUT
+          else
+            echo "total=0"         >> $GITHUB_OUTPUT
+            echo "passed=0"        >> $GITHUB_OUTPUT
+            echo "failed=0"        >> $GITHUB_OUTPUT
+            echo "errors=0"        >> $GITHUB_OUTPUT
+            echo "skipped=0"       >> $GITHUB_OUTPUT
+            echo "flaky=0"         >> $GITHUB_OUTPUT
+            echo "failed_names="   >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send test report email
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "Playwright [${{ steps.run_tests.outcome == 'success' && 'PASSED' || 'FAILED' }}] ${{ github.repository }} @ ${{ github.ref_name }} — ${{ steps.parse_results.outputs.passed }}/${{ steps.parse_results.outputs.total }} passed"
+          to: ${{ secrets.MAIL_RECIPIENT }}
+          from: Playwright CI <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            Playwright Test Execution Summary
+            ==================================
+            Repository : ${{ github.repository }}
+            Branch     : ${{ github.ref_name }}
+            Commit     : ${{ github.sha }}
+            Triggered  : ${{ github.event_name }}
+            Run URL    : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Results
+            -------
+            Total      : ${{ steps.parse_results.outputs.total }}
+            Passed     : ${{ steps.parse_results.outputs.passed }}
+            Failed     : ${{ steps.parse_results.outputs.failed }}
+            Errors     : ${{ steps.parse_results.outputs.errors }}
+            Skipped    : ${{ steps.parse_results.outputs.skipped }}
+
+            Retries & Flaky Tests
+            ---------------------
+            Retried (flaky) : ${{ steps.parse_results.outputs.flaky }}
+            Note: Tests with retries > 0 that eventually passed are counted as flaky.
+            Full retry details are visible in the HTML report linked below.
+
+            Failed Tests
+            ------------
+            ${{ steps.parse_results.outputs.failed_names != '' && steps.parse_results.outputs.failed_names || '  None' }}
+
+            Artifacts & Logs
+            ----------------
+            HTML Report  : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
+            Screenshots  : Download the "test-results" artifact — screenshots are under
+                           test-results/<test-name>/test-failed-1.png
+            Traces       : Download the "test-results" artifact — open .zip files in
+                           https://trace.playwright.dev for step-by-step replay
+            Artifacts are retained for 14 days.
+
+      - name: Fail job if tests failed
+        if: steps.run_tests.outcome == 'failure'
+        run: exit 1

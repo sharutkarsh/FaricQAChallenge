@@ -1,0 +1,27 @@
+{
+  "name": "nopcommerce-playwright-framework",
+  "version": "1.0.0",
+  "description": "Production-grade Playwright automation framework for nopCommerce",
+  "author": "Utkarsh Sharma",
+  "license": "ISC",
+  "type": "commonjs",
+  "scripts": {
+    "test": "npx playwright test --project=chromium",
+    "test:headed": "npx playwright test --project=chromium --headed",
+    "test:debug": "npx playwright test --debug",
+    "test:ui": "npx playwright test --ui",
+    "test:api": "npx playwright test tests/api",
+    "report": "npx playwright show-report",
+    "install:browsers": "npx playwright install",
+    "typecheck": "npx tsc --noEmit"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "ajv": "^8.18.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}
