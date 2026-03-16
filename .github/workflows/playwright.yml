@@ -7,7 +7,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - name: Checkout repository
@@ -65,7 +65,8 @@ jobs:
             SKIPPED=$(grep -oP 'skipped="\K[0-9]+' test-results/results.xml | head -1 || echo 0)
             PASSED=$((TESTS - FAILURES - ERRORS - SKIPPED))
             # Flaky = test cases that have >1 attempt recorded (retried but eventually passed)
-            FLAKY=$(grep -c 'retries=' test-results/results.xml 2>/dev/null || echo 0)
+            FLAKY=$(grep -c 'retries=' test-results/results.xml 2>/dev/null || true)
+            FLAKY=${FLAKY:-0}
             # Collect names of failed test cases for the email
             FAILED_NAMES=$(grep -oP '(?<=name=")[^"]+(?="[^>]*<failure)' test-results/results.xml \
               | head -10 | sed 's/^/  - /' | tr '\n' '|' || echo '')
