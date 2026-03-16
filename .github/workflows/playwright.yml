@@ -54,38 +54,13 @@ jobs:
           path: test-results/
           retention-days: 14
 
-      - name: Parse test results for email summary
+      - name: Parse test results
         if: always()
         id: parse_results
-        run: |
-          if [ -f test-results/results.xml ]; then
-            TESTS=$(grep -oP 'tests="\K[0-9]+' test-results/results.xml | head -1 || echo 0)
-            FAILURES=$(grep -oP 'failures="\K[0-9]+' test-results/results.xml | head -1 || echo 0)
-            ERRORS=$(grep -oP 'errors="\K[0-9]+' test-results/results.xml | head -1 || echo 0)
-            SKIPPED=$(grep -oP 'skipped="\K[0-9]+' test-results/results.xml | head -1 || echo 0)
-            PASSED=$((TESTS - FAILURES - ERRORS - SKIPPED))
-            # Flaky = test cases that have >1 attempt recorded (retried but eventually passed)
-            FLAKY=$(grep -c 'retries=' test-results/results.xml 2>/dev/null || true)
-            FLAKY=${FLAKY:-0}
-            # Collect names of failed test cases for the email
-            FAILED_NAMES=$(grep -oP '(?<=name=")[^"]+(?="[^>]*<failure)' test-results/results.xml \
-              | head -10 | sed 's/^/  - /' | tr '\n' '|' || echo '')
-            echo "total=$TESTS"        >> $GITHUB_OUTPUT
-            echo "passed=$PASSED"      >> $GITHUB_OUTPUT
-            echo "failed=$FAILURES"    >> $GITHUB_OUTPUT
-            echo "errors=$ERRORS"      >> $GITHUB_OUTPUT
-            echo "skipped=$SKIPPED"    >> $GITHUB_OUTPUT
-            echo "flaky=$FLAKY"        >> $GITHUB_OUTPUT
-            echo "failed_names=$FAILED_NAMES" >> $GITHUB_OUTPUT
-          else
-            echo "total=0"         >> $GITHUB_OUTPUT
-            echo "passed=0"        >> $GITHUB_OUTPUT
-            echo "failed=0"        >> $GITHUB_OUTPUT
-            echo "errors=0"        >> $GITHUB_OUTPUT
-            echo "skipped=0"       >> $GITHUB_OUTPUT
-            echo "flaky=0"         >> $GITHUB_OUTPUT
-            echo "failed_names="   >> $GITHUB_OUTPUT
-          fi
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: test-results/results.xml
+          publish_results: false
 
       - name: Send test report email
         if: always()
@@ -113,18 +88,7 @@ jobs:
             Total      : ${{ steps.parse_results.outputs.total }}
             Passed     : ${{ steps.parse_results.outputs.passed }}
             Failed     : ${{ steps.parse_results.outputs.failed }}
-            Errors     : ${{ steps.parse_results.outputs.errors }}
             Skipped    : ${{ steps.parse_results.outputs.skipped }}
-
-            Retries & Flaky Tests
-            ---------------------
-            Retried (flaky) : ${{ steps.parse_results.outputs.flaky }}
-            Note: Tests with retries > 0 that eventually passed are counted as flaky.
-            Full retry details are visible in the HTML report linked below.
-
-            Failed Tests
-            ------------
-            ${{ steps.parse_results.outputs.failed_names != '' && steps.parse_results.outputs.failed_names || '  None' }}
 
             Artifacts & Logs
             ----------------
