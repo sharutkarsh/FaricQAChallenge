@@ -91,14 +91,14 @@ jobs:
         if: always()
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: smtp-relay.brevo.com
-          server_port: 587
-          secure: false
-          username: ${{ secrets.MAIL_USERNAME }}
+          server_address: smtp.resend.com
+          server_port: 465
+          secure: true
+          username: resend
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: "Playwright [${{ steps.run_tests.outcome == 'success' && 'PASSED' || 'FAILED' }}] ${{ github.repository }} @ ${{ github.ref_name }} — ${{ steps.parse_results.outputs.passed }}/${{ steps.parse_results.outputs.total }} passed"
           to: ${{ secrets.MAIL_RECIPIENT }}
-          from: Playwright CI <${{ secrets.MAIL_USERNAME }}>
+          from: Playwright CI <onboarding@resend.dev>
           body: |
             Playwright Test Execution Summary
             ==================================
