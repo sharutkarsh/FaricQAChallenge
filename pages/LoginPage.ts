@@ -1,4 +1,5 @@
 import { BasePage, expect } from './BasePage';
+import { testData } from '../config/testData';
 
 export class LoginPage extends BasePage {
 
@@ -14,7 +15,7 @@ export class LoginPage extends BasePage {
   // ================= ACTIONS =================
 
   async login(email: string, password: string) {
-    await expect(this.loginLink).toBeVisible({ timeout: 30000 });
+    await expect(this.loginLink).toBeVisible({ timeout: testData.expected.loginTimeout });
     await this.loginLink.click();
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);

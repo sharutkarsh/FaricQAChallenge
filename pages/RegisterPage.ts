@@ -35,7 +35,7 @@ export class RegisterPage extends BasePage {
   // ================= ASSERTIONS =================
 
   async assertRegistrationSuccess() {
-    await expect(this.successMessage).toContainText('Your registration completed');
+    await expect(this.successMessage).toContainText(testData.expected.registrationSuccess);
     await expect(this.logoutLink).toBeVisible();
     await this.logoutLink.click();
   }

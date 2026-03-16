@@ -5,44 +5,33 @@ export class CheckoutPage extends BasePage {
 
   // ================= LOCATORS =================
 
-  // Step 1 — Billing address
-  readonly billingCountrySelect   = this.page.locator("xpath=//*[@id='BillingNewAddress_CountryId']");
-  readonly billingStateSelect     = this.page.locator("xpath=//*[@id='BillingNewAddress_StateProvinceId']");
-  readonly billingCityInput       = this.page.locator("xpath=//*[@id='BillingNewAddress_City']");
-  readonly billingAddressInput    = this.page.locator("xpath=//*[@id='BillingNewAddress_Address1']");
-  readonly billingZipInput        = this.page.locator("xpath=//*[@id='BillingNewAddress_ZipPostalCode']");
-  readonly billingPhoneInput      = this.page.locator("xpath=//*[@id='BillingNewAddress_PhoneNumber']");
-  readonly billingContinue        = this.page.locator("xpath=//*[@id='billing-buttons-container']//button[contains(text(),'Continue')]");
-
-  // Step 3 — Shipping method
-  readonly shippingMethodContinue = this.page.locator("xpath=//*[@id='shipping-method-buttons-container']//button[contains(text(),'Continue')]");
-
-  // Step 4 — Payment method
-  readonly paymentMethodContinue  = this.page.locator("xpath=//*[@id='payment-method-buttons-container']//button[contains(text(),'Continue')]");
-
-  // Step 5 — Payment information
-  readonly paymentInfoContinue    = this.page.locator("xpath=//*[@id='payment-info-buttons-container']//button[contains(text(),'Continue')]");
-
-  // Step 6 — Confirm order
-  readonly confirmButton              = this.page.locator("xpath=//*[@id='confirm-order-buttons-container']//button[contains(text(),'Confirm')]");
+  readonly billingCountrySelect         = this.page.locator("xpath=//*[@id='BillingNewAddress_CountryId']");
+  readonly billingStateSelect           = this.page.locator("xpath=//*[@id='BillingNewAddress_StateProvinceId']");
+  readonly billingCityInput             = this.page.locator("xpath=//*[@id='BillingNewAddress_City']");
+  readonly billingAddressInput          = this.page.locator("xpath=//*[@id='BillingNewAddress_Address1']");
+  readonly billingZipInput              = this.page.locator("xpath=//*[@id='BillingNewAddress_ZipPostalCode']");
+  readonly billingPhoneInput            = this.page.locator("xpath=//*[@id='BillingNewAddress_PhoneNumber']");
+  readonly billingContinue              = this.page.locator("xpath=//*[@id='billing-buttons-container']//button[contains(text(),'Continue')]");
+  readonly shippingMethodContinue       = this.page.locator("xpath=//*[@id='shipping-method-buttons-container']//button[contains(text(),'Continue')]");
+  readonly paymentMethodContinue        = this.page.locator("xpath=//*[@id='payment-method-buttons-container']//button[contains(text(),'Continue')]");
+  readonly paymentInfoContinue          = this.page.locator("xpath=//*[@id='payment-info-buttons-container']//button[contains(text(),'Continue')]");
+  readonly confirmButton                = this.page.locator("xpath=//*[@id='confirm-order-buttons-container']//button[contains(text(),'Confirm')]");
   readonly confirmOrderButtonsContainer = this.page.locator("xpath=//*[@id='confirm-order-buttons-container']");
-
-  // Thank-you page
-  readonly thankYouTitle    = this.page.locator("xpath=//*[contains(@class,'title') and contains(.,'Your order has been successfully processed')]");
-  readonly orderNumberText  = this.page.locator("xpath=//*[contains(@class,'order-number')]");
-  readonly orderDetailsLink = this.page.getByRole('link', { name: 'Click here for order details' });
+  readonly thankYouTitle                = this.page.locator("xpath=//*[contains(@class,'title') and contains(.,'Your order has been successfully processed')]");
+  readonly orderNumberText              = this.page.locator("xpath=//*[contains(@class,'order-number')]");
+  readonly orderDetailsLink             = this.page.getByRole('link', { name: 'Click here for order details' });
 
   // ================= ACTIONS =================
 
   async fillBillingDetails() {
     await expect(this.billingCountrySelect).toBeVisible();
+    const statesResponse = this.page.waitForResponse(
+      r => r.url().includes(testData.api.statesEndpoint)
+    );
     await this.billingCountrySelect.selectOption({ label: testData.billing.country });
-
-    // Wait for state dropdown to re-populate via AJAX after country change
-    await this.page.waitForResponse(r => r.url().includes('getstatesbycountryid'));
+    await statesResponse;
     await expect(this.billingStateSelect).toBeVisible();
     await this.billingStateSelect.selectOption({ label: testData.billing.state });
-
     await this.billingCityInput.fill(testData.billing.city);
     await this.billingAddressInput.fill(testData.billing.address);
     await this.billingZipInput.fill(testData.billing.zip);
@@ -62,11 +51,7 @@ export class CheckoutPage extends BasePage {
 
   async confirmPaymentInfo() {
     await expect(this.paymentInfoContinue).toBeVisible();
-    // Cloudflare's __cfRLUnblockHandlers guard suppresses the onclick handler on a normal
-    // .click() — dispatch the event directly so PaymentInfo.save() fires regardless.
     await this.paymentInfoContinue.dispatchEvent('click');
-    // Wait for the confirm-order section to expand — the container transitions from
-    // display:none to visible via CSS after the AJAX response settles.
     await this.confirmOrderButtonsContainer.waitFor({ state: 'visible', timeout: 20000 });
   }
 

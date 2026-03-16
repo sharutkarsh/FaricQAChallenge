@@ -1,4 +1,5 @@
 import { BasePage, expect } from './BasePage';
+import { testData } from '../config/testData';
 
 export class OrdersPage extends BasePage {
 
@@ -14,6 +15,9 @@ export class OrdersPage extends BasePage {
   readonly orderDetailNumber = this.page.locator("xpath=//strong[contains(text(),'Order #')]");
   readonly orderDetailStatus = this.page.locator("xpath=//li[contains(text(),'Order Status:')]");
   readonly orderDetailTotal  = this.page.locator("xpath=//li[contains(text(),'Order Total:')]");
+
+  orderItemByNumber = (orderNumber: string) =>
+    this.page.locator(`xpath=//*[contains(@class,'order-item') and contains(.,'${orderNumber}')]`);
 
   // ================= ACTIONS =================
 
@@ -37,14 +41,13 @@ export class OrdersPage extends BasePage {
   }
 
   async assertOrderVisible(orderNumber: string) {
-    const match = this.page.locator(`xpath=//*[contains(@class,'order-item') and contains(.,'${orderNumber}')]`);
-    await expect(match).toBeVisible();
+    await expect(this.orderItemByNumber(orderNumber)).toBeVisible();
   }
 
   async assertOrderDetailPage() {
     await expect(this.orderDetailTitle).toBeVisible();
     await expect(this.orderDetailNumber).toBeVisible();
-    await expect(this.orderDetailStatus).toContainText('Pending');
+    await expect(this.orderDetailStatus).toContainText(testData.expected.orderStatus);
   }
 
 }

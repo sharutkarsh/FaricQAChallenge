@@ -1,5 +1,6 @@
 import { BasePage, expect } from './BasePage';
 import { validateAddToCartAPI } from '../utils/networkHelper';
+import { testData } from '../config/testData';
 
 export class ProductPage extends BasePage {
 
@@ -38,7 +39,7 @@ export class ProductPage extends BasePage {
 
   async assertAddedToCart() {
     await expect(this.cartSuccessNotification).toBeVisible();
-    await expect(this.cartSuccessNotification).toContainText('added to your');
+    await expect(this.cartSuccessNotification).toContainText(testData.expected.addToCartSuccess);
   }
 
 }

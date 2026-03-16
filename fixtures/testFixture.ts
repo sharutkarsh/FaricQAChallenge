@@ -1,5 +1,4 @@
 import { test as base } from '@playwright/test';
-
 import { RegisterPage } from '../pages/RegisterPage';
 import { LoginPage } from '../pages/LoginPage';
 import { HomePage } from '../pages/HomePage';
@@ -9,68 +8,45 @@ import { CheckoutPage } from '../pages/CheckoutPage';
 import { OrdersPage } from '../pages/OrdersPage';
 
 type PageFixtures = {
-
-  registerPage: RegisterPage
-  loginPage: LoginPage
-  homePage: HomePage
-  productPage: ProductPage
-  cartPage: CartPage
-  checkoutPage: CheckoutPage
-  ordersPage: OrdersPage
-
-}
+  registerPage: RegisterPage;
+  loginPage: LoginPage;
+  homePage: HomePage;
+  productPage: ProductPage;
+  cartPage: CartPage;
+  checkoutPage: CheckoutPage;
+  ordersPage: OrdersPage;
+};
 
 export const test = base.extend<PageFixtures>({
 
   registerPage: async ({ page }, use) => {
-
-    const registerPage = new RegisterPage(page)
-    await use(registerPage)
-
+    await use(new RegisterPage(page));
   },
 
   loginPage: async ({ page }, use) => {
-
-    const loginPage = new LoginPage(page)
-    await use(loginPage)
-
+    await use(new LoginPage(page));
   },
 
   homePage: async ({ page }, use) => {
-
-    const homePage = new HomePage(page)
-    await use(homePage)
-
+    await use(new HomePage(page));
   },
 
   productPage: async ({ page }, use) => {
-
-    const productPage = new ProductPage(page)
-    await use(productPage)
-
+    await use(new ProductPage(page));
   },
 
   cartPage: async ({ page }, use) => {
-
-    const cartPage = new CartPage(page)
-    await use(cartPage)
-
+    await use(new CartPage(page));
   },
 
   checkoutPage: async ({ page }, use) => {
-
-    const checkoutPage = new CheckoutPage(page)
-    await use(checkoutPage)
-
+    await use(new CheckoutPage(page));
   },
 
   ordersPage: async ({ page }, use) => {
+    await use(new OrdersPage(page));
+  },
 
-    const ordersPage = new OrdersPage(page)
-    await use(ordersPage)
+});
 
-  }
-
-})
-
-export { expect } from '@playwright/test'
+export { expect } from '@playwright/test';

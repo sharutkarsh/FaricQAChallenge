@@ -217,4 +217,4 @@ Network interception is handled in `utils/networkHelper.ts`:
 - `validateSearchAPI` — validates GET /search returns 200
 - `validateAddToCartAPI` — validates POST addproducttocart returns 200 with `success: true`
 - `validateCheckoutAPI` — validates POST OpcConfirmOrder returns 200 and passes JSON schema validation
-# FaricQAChallenge
+# FarbricQAChallenge
