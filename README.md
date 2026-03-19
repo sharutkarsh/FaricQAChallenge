@@ -57,17 +57,18 @@ Production-grade end-to-end automation framework for [demo.nopcommerce.com](http
 
 The end-to-end test covers all 11 required steps:
 
-1. Navigate to the nopCommerce application
-2. Register a new user with a faker-generated unique email
-3. Log out after registration, then log in with the new account
-4. Search for a product using the search bar
-5. Validate search results are displayed
-6. Open the first product and validate title, price, and description
-7. Add the product to the shopping cart (intercepts add-to-cart API)
-8. Open cart, verify items, proceed to checkout
-9. Fill billing details and confirm order (intercepts checkout API, validates response schema)
-10. Navigate to Orders page and verify the order appears with the correct order number
-11. Log out and verify the login link is visible
+1. Navigate to the nopCommerce application.
+2. Create a new user from user registration page (Ensure username is generated randomly and it is unique in every test
+execution).
+3. Login to the application with the created user.
+4. Search for a product using the search bar and verify the search results.
+5. Select a product and validate the product details.
+6. Add the product to the shopping cart.
+7. Proceed to checkout and complete the order.
+8. While completing checkout, intercept and validate API network requests.
+9. Navigate to Orders page and validate the order details.
+10.Log out of the application and verify the logout is successful.
+
 
 ---
 
