@@ -1,8 +1,14 @@
 name: Playwright Tests
 
+concurrency:
+  group: playwright-tests
+  cancel-in-progress: true
+
 on:
   push:
   pull_request:
+  schedule:
+    - cron: '0 * * * *'   # Runs every hour (UTC)
 
 jobs:
   test:
@@ -59,10 +65,16 @@ jobs:
           XML=test-results/results.xml
           if [ -f "$XML" ]; then
             get() { grep -oP "$1=\"\K[0-9]+" "$XML" | head -1; }
-            TOTAL=$(get tests); FAILED=$(get failures); ERRORS=$(get errors); SKIPPED=$(get skipped)
+            TOTAL=$(get tests)
+            FAILED=$(get failures)
+            ERRORS=$(get errors)
+            SKIPPED=$(get skipped)
             PASSED=$(( TOTAL - FAILED - ERRORS - SKIPPED ))
           else
-            TOTAL=0; PASSED=0; FAILED=0; SKIPPED=0
+            TOTAL=0
+            PASSED=0
+            FAILED=0
+            SKIPPED=0
           fi
           echo "total=$TOTAL"   >> $GITHUB_OUTPUT
           echo "passed=$PASSED" >> $GITHUB_OUTPUT
@@ -84,22 +96,28 @@ jobs:
           body: |
             Playwright Test Execution Summary
             ==================================
+
             Repository : ${{ github.repository }}
             Branch     : ${{ github.ref_name }}
             Commit     : ${{ github.sha }}
             Triggered  : ${{ github.event_name }}
-            Run URL    : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Run URL
+            -------
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
             Results
             -------
-            Total      : ${{ steps.parse_results.outputs.total }}
-            Passed     : ${{ steps.parse_results.outputs.passed }}
-            Failed     : ${{ steps.parse_results.outputs.failed }}
-            Skipped    : ${{ steps.parse_results.outputs.skipped }}
+            Total   : ${{ steps.parse_results.outputs.total }}
+            Passed  : ${{ steps.parse_results.outputs.passed }}
+            Failed  : ${{ steps.parse_results.outputs.failed }}
+            Skipped : ${{ steps.parse_results.outputs.skipped }}
 
-            Artifacts & Logs
-            ----------------
-            HTML Report  : ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
+            Artifacts
+            ---------
+            HTML Report :
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
+
             Artifacts are retained for 14 days.
 
       - name: Fail job if tests failed
