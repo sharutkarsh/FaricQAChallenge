@@ -7,8 +7,6 @@ concurrency:
 on:
   push:
   pull_request:
-  schedule:
-    - cron: '0 * * * *'   # Runs every hour (UTC)
 
 jobs:
   test:
